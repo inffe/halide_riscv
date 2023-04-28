@@ -22,6 +22,10 @@ if("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "riscv64")
     "-DCMAKE_TOOLCHAIN_FILE=<SOURCE_DIR>/platforms/linux/riscv64-gcc.toolchain.cmake"
     "-DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}"
     "-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}"
+    # Uncomment for OpenCV RVV
+    # "-DRISCV_RVV_SCALABLE=OFF"
+    # "-DCPU_BASELINE=RVV"
+    # "-DCPU_RVV_FLAGS_ON=-march=rv64gcv0p7"
   )
 endif()
 

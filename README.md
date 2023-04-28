@@ -60,6 +60,7 @@ OS: [20211230_LicheeRV_debian_d1_hdmi_8723ds](https://mega.nz/folder/lx4CyZBA#Pi
             <th>Algorithm</th>
             <th>Input</th>
             <th>OpenCV (no RVV)</th>
+            <th>OpenCV (RVV)</th>
             <th>Halide (no RVV)</th>
             <th>Halide (RVV)</th>
         </tr>
@@ -69,11 +70,13 @@ OS: [20211230_LicheeRV_debian_d1_hdmi_8723ds](https://mega.nz/folder/lx4CyZBA#Pi
             <td rowspan=2>BGR2Gray</td>
             <td>1080x1920x3 (interleaved)</td>
             <td>32.18ms</td>
+            <td>264.66ms</td>
             <td>34.18ms</td>
             <td>30.78ms</td>
         </tr>
         <tr>
             <td>1080x1920x3 (planar)</td>
+            <td>--</td>
             <td>--</td>
             <td>38.13ms</td>
             <td>6.65ms</td>
@@ -82,6 +85,7 @@ OS: [20211230_LicheeRV_debian_d1_hdmi_8723ds](https://mega.nz/folder/lx4CyZBA#Pi
             <td>Box filter</td>
             <td>input: 1080x1920<br>output: 1078x1918</td>
             <td>75.17ms</td>
+            <td>139.16ms</td>
             <td>198.02ms</td>
             <td>62.89ms</td>
         </tr>
@@ -89,6 +93,7 @@ OS: [20211230_LicheeRV_debian_d1_hdmi_8723ds](https://mega.nz/folder/lx4CyZBA#Pi
             <td>Histogram</td>
             <td>input: 1080x1920x3<br>output: 256x3</td>
             <td>57.35ms</td>
+            <td>67.32ms</td>
             <td>92.44ms</td>
             <td>--</td>
         </tr>
@@ -96,11 +101,13 @@ OS: [20211230_LicheeRV_debian_d1_hdmi_8723ds](https://mega.nz/folder/lx4CyZBA#Pi
             <td rowspan=2>Convolution<br>input: 1x16x128x128<br>kernel: 32x16x3x3<br>stride: 1, pad: 0</td>
             <td>(FP32) NCHW</td>
             <td>829.13ms</td>
+            <td>338.02ms</td>
             <td>4713.57ms</td>
             <td>698.27ms</td>
         </tr>
         <tr>
             <td>(FP32) NHWC</td>
+            <td>--</td>
             <td>--</td>
             <td>1357.81ms</td>
             <td>418.95ms</td>
