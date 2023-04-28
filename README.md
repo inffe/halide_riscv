@@ -54,29 +54,59 @@ HW: Sipeed Lichee RV Dock (Allwinner D1 aka XuanTie C906 CPU)
 
 OS: [20211230_LicheeRV_debian_d1_hdmi_8723ds](https://mega.nz/folder/lx4CyZBA#PiFhY7oSVQ3gp2ZZ_AnwYA/folder/xtxkABIB)
 
-| BGR2Gray<br>input: 1080x1920| Median time |
-|---|---|
-| Reference (interleaved) | 37.80ms |
-| OpenCV (interleaved), no RVV | 32.18ms |
-| Halide (interleaved) | 30.78ms |
-| Halide (planar) | 6.65ms |
-
-| Box filter<br>input: 1080x1920<br>output: 1078x1918| Median time |
-|---|---|
-| OpenCV, no RVV | 75.17ms |
-| Halide | 62.89ms |
-
-| Histogram<br>input: 1080x1920x3<br>output: 256x3| Median time |
-|---|---|
-| Reference | 72.06ms |
-| OpenCV, no RVV | 57.35ms |
-| Halide | 92.44ms |
-
-| Convolution FP32<br>input: 1x16x128x128<br>kernel: 32x16x3x3| Layout | Median time |
-|---|---|---|
-| OpenCV, no RVV | NCHW | 829.13ms |
-| Halide | NCHW | 698.27ms |
-| Halide | NHWC | 418.95ms |
+<table>
+    <thead>
+        <tr>
+            <th>Algorithm</th>
+            <th>Input</th>
+            <th>OpenCV (no RVV)</th>
+            <th>Halide (no RVV)</th>
+            <th>Halide (RVV)</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td rowspan=2>BGR2Gray</td>
+            <td>1080x1920x3 (interleaved)</td>
+            <td>32.18ms</td>
+            <td>34.18ms</td>
+            <td>30.78ms</td>
+        </tr>
+        <tr>
+            <td>1080x1920x3 (planar)</td>
+            <td>--</td>
+            <td>38.13ms</td>
+            <td>6.65ms</td>
+        </tr>
+        <tr>
+            <td>Box filter</td>
+            <td>input: 1080x1920<br>output: 1078x1918</td>
+            <td>75.17ms</td>
+            <td>198.02ms</td>
+            <td>62.89ms</td>
+        </tr>
+        <tr>
+            <td>Histogram</td>
+            <td>input: 1080x1920x3<br>output: 256x3</td>
+            <td>57.35ms</td>
+            <td>92.44ms</td>
+            <td>--</td>
+        </tr>
+        <tr>
+            <td rowspan=2>Convolution<br>input: 1x16x128x128<br>kernel: 32x16x3x3<br>stride: 1, pad: 0</td>
+            <td>(FP32) NCHW</td>
+            <td>829.13ms</td>
+            <td>4713.57ms</td>
+            <td>698.27ms</td>
+        </tr>
+        <tr>
+            <td>(FP32) NHWC</td>
+            <td>--</td>
+            <td>1357.81ms</td>
+            <td>418.95ms</td>
+        </tr>
+    </tbody>
+</table>
 
 ## Generate AOT kernels
 
