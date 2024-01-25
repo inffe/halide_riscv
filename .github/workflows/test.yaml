@@ -1,0 +1,67 @@
+name: Test on RISC-V
+
+on: [pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: true
+
+    - name: Download GCC
+      run: |
+        python3 -m pip install --upgrade pip
+        python3 -m pip install gdown
+        gdown https://drive.google.com/uc?id=1U3JaUqWyRYvlhfA3lVEfwu56em-Gwonl
+        mkdir xuantie-gcc && cd xuantie-gcc
+        tar -xf ../xuantie-gcc-v2.8.0.tar.gz
+
+    - name: Clone Halide headeres
+      run: |
+        git clone --depth 1 -b v16.0.0 https://github.com/halide/Halide
+
+    - name: Build
+      run: |
+        export PATH=${{ github.workspace }}/xuantie-gcc/bin/:$PATH
+
+        mkdir build_rv64 && cd build_rv64
+        cmake .. \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/riscv64-071.toolchain.cmake \
+            -DHalide_INCLUDE_DIRS=${{ github.workspace }}/Halide/src/runtime
+
+        make -j$(nproc --all)
+
+    - name: Upload binaries
+      uses: actions/upload-artifact@v4
+      with:
+        name: halide_riscv
+        path: |
+          build_rv64/test_algo
+          build_rv64/perf_algo
+          build_rv64/libalgos.so
+          build_rv64/opencv-prefix/src/opencv-build/lib/*
+
+  test:
+    needs: build
+    runs-on: self-hosted
+    steps:
+      - name: Download binaries
+        uses: actions/download-artifact@v4
+        with:
+          name: halide_riscv
+
+      - name: Run tests
+        run: |
+          chmod +x test_algo
+          export LD_LIBRARY_PATH=./:./opencv-prefix/src/opencv-build/lib:$LD_LIBRARY_PATH
+          ./test_algo
+
+      - name: Run perf tests
+        run: |
+          chmod +x perf_algo
+          export LD_LIBRARY_PATH=./:./opencv-prefix/src/opencv-build/lib:$LD_LIBRARY_PATH
+          ./perf_algo
