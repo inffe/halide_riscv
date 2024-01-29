@@ -94,6 +94,8 @@ TEST(boxFilter, halide) {
     ASSERT_LE(norm(ref, dst, NORM_INF), 1);
 }
 
+#ifdef HAVE_OPENCV_DNN
+
 TEST(convolution_nchw, halide) {
     static const int ic = 16;
     static const int oc = 32;
@@ -139,3 +141,5 @@ TEST(convolution_nhwc, halide) {
 
     ASSERT_LE(norm(ref.reshape(1, 1), dst.reshape(1, 1), NORM_INF), 4e-5f);
 }
+
+#endif  // HAVE_OPENCV_DNN

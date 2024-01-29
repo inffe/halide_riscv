@@ -36,7 +36,7 @@ ExternalProject_Add(opencv
     "-DCMAKE_BUILD_TYPE=Release"
     "-DCMAKE_INSTALL_PREFIX=<BINARY_DIR>/install/"
     ${CROSS_COMPILE_FLAGS}
-    "-DBUILD_LIST=ts,core,imgproc,dnn"
+    "-DBUILD_LIST=ts,core,imgproc"
     "-DWITH_WEBP=OFF"
     "-DWITH_ZLIB=OFF"
     "-DWITH_OPENEXR=OFF"
@@ -92,7 +92,6 @@ target_include_directories(algos PRIVATE
 target_link_libraries(algos
   "${binary_dir}/install/lib/libopencv_core.so"
   "${binary_dir}/install/lib/libopencv_imgproc.so"
-  "${binary_dir}/install/lib/libopencv_dnn.so"
 )
 
 

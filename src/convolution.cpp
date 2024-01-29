@@ -12,6 +12,8 @@
 
 #include <opencv2/opencv.hpp>
 
+#ifdef HAVE_OPENCV_DNN
+
 #ifdef __riscv
   #include <HalideBuffer.h>
   #include "convolution_nchw.h"
@@ -172,3 +174,5 @@ void convolution_opencv(const cv::Mat& src, const cv::Mat& weights, cv::Mat& dst
     net.setInput(src);
     dst = net.forward();
 }
+
+#endif  // HAVE_OPENCV_DNN

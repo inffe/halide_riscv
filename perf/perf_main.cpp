@@ -121,6 +121,8 @@ PERF_TEST(boxFilter, opencv) {
     SANITY_CHECK_NOTHING();
 }
 
+#ifdef HAVE_OPENCV_DNN
+
 PERF_TEST(convolution, opencv) {
     static const int ic = 16;
     static const int oc = 32;
@@ -177,3 +179,5 @@ PERF_TEST(convolution_nhwc, halide) {
 
     SANITY_CHECK_NOTHING();
 }
+
+#endif  // HAVE_OPENCV_DNN

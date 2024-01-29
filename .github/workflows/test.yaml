@@ -19,11 +19,30 @@ jobs:
         mkdir xuantie-gcc && cd xuantie-gcc
         tar -xf ../xuantie-gcc-v2.8.0.tar.gz
 
-    - name: Clone Halide headeres
+    - name: Download Halide
       run: |
-        git clone --depth 1 -b v16.0.0 https://github.com/halide/Halide
+        gdown https://drive.google.com/uc?id=1AoOtkFPF5yQkZIUJDvebk5unekgS0ACf
+        mkdir halide-install && cd halide-install
+        tar -xf ../halide-rvv.tar.gz
 
-    - name: Build
+    - name: Build for x86
+      run: |
+        mkdir build && cd build
+        cmake .. \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DHalide_DIR=${{ github.workspace }}/halide-install/lib/cmake/Halide
+
+        make -j$(nproc --all)
+
+    - name: Generate code
+      run: |
+        export LD_LIBRARY_PATH=${{ github.workspace }}/halide-install/lib:$LD_LIBRARY_PATH
+        cd build
+        rm ${{ github.workspace }}/aot/*
+        ./perf_algo --gtest_filter=*halide*
+        mv *.h *.s ${{ github.workspace }}/aot
+
+    - name: Build for RISC-V
       run: |
         export PATH=${{ github.workspace }}/xuantie-gcc/bin/:$PATH
 
@@ -31,7 +50,7 @@ jobs:
         cmake .. \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/riscv64-071.toolchain.cmake \
-            -DHalide_INCLUDE_DIRS=${{ github.workspace }}/Halide/src/runtime
+            -DHalide_INCLUDE_DIRS=${{ github.workspace }}/halide-install/include
 
         make -j$(nproc --all)
 
@@ -49,6 +68,9 @@ jobs:
     needs: build
     runs-on: self-hosted
     steps:
+      - name: CPU info
+        run: cat /proc/cpuinfo
+
       - name: Download binaries
         uses: actions/download-artifact@v4
         with:

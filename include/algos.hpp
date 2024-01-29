@@ -24,9 +24,11 @@ void bgr2gray_opencv(const cv::Mat& src, cv::Mat& dst);
 void boxFilter_halide(uint16_t* src, uint16_t* dst, int height, int width);
 void boxFilter_opencv(const cv::Mat& src, cv::Mat& dst);
 
+#ifdef HAVE_OPENCV_DNN
 void convolution_nchw_halide(float* src, float* kernel, float* dst,
                              int inpChannels, int outChannels, int height, int width);
 void convolution_nhwc_halide(float* src, float* kernel, float* dst,
                              int inpChannels, int outChannels, int height, int width);
 void convolution_opencv(const cv::Mat& src, const cv::Mat& weights, cv::Mat& dst,
                         int inpChannels, int outChannels);
+#endif  // HAVE_OPENCV_DNN
