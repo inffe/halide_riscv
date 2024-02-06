@@ -145,10 +145,6 @@ PERF_TEST(boxFilter, opencv) {
     SANITY_CHECK_NOTHING();
 }
 
-PERF_TEST(contrast, reference) {
-    SANITY_CHECK_NOTHING();
-}
-
 #ifdef HAVE_OPENCV_DNN
 
 PERF_TEST(convolution, opencv) {
