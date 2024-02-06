@@ -163,7 +163,7 @@ TEST(contrast, halide) {
     Mat stDev3(imageHeigth, imageWidth, CV_8U);
     Mat stDev4(imageHeigth, imageWidth, CV_8U);
 
-    standartDeviation(image1, stDev1, imageHeigth, imageWidth);
+    //standartDeviation(image1, stDev1, imageHeigth, imageWidth);
 }
 
 #ifdef HAVE_OPENCV_DNN

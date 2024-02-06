@@ -7,33 +7,6 @@
 using namespace cv;
 using namespace Halide;
 
-/*Mat laplacFilter(Mat imageGray, std::vector<int> laplacianF, int width, int height) {
-    Mat result = Mat(height, width, CV_64F, 0.0);
-    for (int j = 1; j < height - 1; ++j) { //height
-        for (int i = 1; i < width - 1; ++i) { //widtht
-            std::vector<int> filler = {};
-            filler.push_back(imageGray.at<float>(j - 1, i - 1));
-            filler.push_back(imageGray.at<float>(j - 1, i));
-            filler.push_back(imageGray.at<float>(j - 1, i + 1));
-            filler.push_back(imageGray.at<float>(j, i - 1));
-            filler.push_back(imageGray.at<float>(j, i));
-            filler.push_back(imageGray.at<float>(j, i + 1));
-            filler.push_back(imageGray.at<float>(j + 1, i - 1));
-            filler.push_back(imageGray.at<float>(j + 1, i));
-            filler.push_back(imageGray.at<float>(j + 1, i + 1));
-            for (int k = 0; k < 9; ++k) { //laplacian filter
-                result.at<int>(j, i) += filler[k] *  laplacianF[k];
-            }
-            if (result.at<int>(j, i) > 255) {
-                result.at<int>(j, i) = 255;
-            } else if (result.at<int>(j, i) < 0) {
-                result.at<int>(j, i) == 0;
-            }
-        }
-    }
-    return result;  
-}*/
-
 void LaplacianFilter(Mat src, Mat dst, int height, int width) { // переназвать фильтр grayscale + laplacian
 
     int8_t filter[3][3] = {{0, -1, 0}, {-1, 4, -1}, {0, -1, 0}}; //фильтр
@@ -94,7 +67,7 @@ void standartDeviation(Mat src, Mat dst, int height, int width) {
     for (int j = 0; j < height; ++j) { //height
         for (int i = 0; i < width; ++i) { //widtht
             chR += src.at<int>(j, i, 0);
-            chG += src.at<int>(j, i, 1); //можно ли так обращаться??
+            chG += src.at<int>(j, i, 1); 
             chB += src.at<int>(j, i, 2);
         }
     }
@@ -124,7 +97,7 @@ void standartDeviation(Mat src, Mat dst, int height, int width) {
     // step 6 - find the sqrt(variance) / 3x1
 
     ssR = sqrt(ssR);
-    ssG = sqrt(ssG); // итоговые размерности?? // собрать в функцию и вывести?
+    ssG = sqrt(ssG); 
     ssB = sqrt(ssB);
 
 }
@@ -144,51 +117,6 @@ void wellExp(Mat src, Mat dst, int height, int width) {
     expo2 = -expo2 / 0.08f;
     expo3 = -expo3 / 0.08f;
 
-    // доделать
+    // fix...
 
-
-}
-
-void mertens999() {
-
-    Mat image1 = imread("../halide_riscv/src/1.jpg");
-    Mat image2 = imread("../halide_riscv/src/2.jpg");
-    Mat image3 = imread("../halide_riscv/src/3.jpg");
-    Mat image4 = imread("../halide_riscv/src/4.jpg");
-
-    Mat image1Gray = imread("../halide_riscv/src/1.jpg", IMREAD_GRAYSCALE);
-    Mat image2Gray = imread("../halide_riscv/src/2.jpg", IMREAD_GRAYSCALE);
-    Mat image3Gray = imread("../halide_riscv/src/3.jpg", IMREAD_GRAYSCALE);
-    Mat image4Gray = imread("../halide_riscv/src/4.jpg", IMREAD_GRAYSCALE);
-
-    int imageWidth = image1Gray.cols;
-    int imageHeigth = image1Gray.rows;
-
-    std::cout << image1Gray.cols << std::endl;
-    std::cout << image1Gray.rows << std::endl;
-
-    //we apply a Laplacian filter to the grayscale version of each image, and take the absolute value of the filter response
-
-    std::vector<int> laplacianF = {-1, -1, -1, -1, 8, -1, -1, -1, -1};
-
-    //auto image1Laplacian = LaplacianFilter(image1Gray, laplacianF, imageWidth, imageHeigth);
-    //auto image2Laplacian = LaplacianFilter(image2Gray, laplacianF, imageWidth, imageHeigth);
-    //auto image3Laplacian = LaplacianFilter(image3Gray, laplacianF, imageWidth, imageHeigth);
-    //auto image4Laplacian = LaplacianFilter(image4Gray, laplacianF, imageWidth, imageHeigth);
-
-    //std::cout << image1Laplacian.cols << std::endl;
-    //std::cout << image1Laplacian.rows << std::endl;
-    
-    //imwrite("initial.jpg", image1Gray);
-    //imwrite("laplacian.jpg", image1Laplacian);
-    
-    //absolute value
-
-
-
-    //computed as the standard deviation within the R, G and B channel, at each pixel
-
-    //mean
-
-    int na = 1;
 }
