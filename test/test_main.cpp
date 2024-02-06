@@ -11,6 +11,7 @@
 // limitations under the License.
 
 #include <opencv2/ts.hpp>
+#include <iostream>
 
 #include "algos.hpp"
 
@@ -113,6 +114,58 @@ TEST(boxFilter, halide) {
     ASSERT_LE(norm(ref, dst, NORM_INF), 1);
 }
 
+TEST(contrast, halide) {
+
+    Mat image1 = imread("../halide_riscv/src/1.jpg");
+    Mat image2 = imread("../halide_riscv/src/2.jpg");
+    Mat image3 = imread("../halide_riscv/src/3.jpg");
+    Mat image4 = imread("../halide_riscv/src/4.jpg");
+
+    Mat image1Gray = imread("../halide_riscv/src/1.jpg", IMREAD_GRAYSCALE);
+    Mat image2Gray = imread("../halide_riscv/src/2.jpg", IMREAD_GRAYSCALE);
+    Mat image3Gray = imread("../halide_riscv/src/3.jpg", IMREAD_GRAYSCALE);
+    Mat image4Gray = imread("../halide_riscv/src/4.jpg", IMREAD_GRAYSCALE);
+
+    int imageWidth = image1Gray.cols;
+    int imageHeigth = image1Gray.rows;
+
+    Mat laplaced1(imageHeigth, imageWidth, CV_8U);
+    Mat laplaced2(imageHeigth, imageWidth, CV_8U);
+    Mat laplaced3(imageHeigth, imageWidth, CV_8U);
+    Mat laplaced4(imageHeigth, imageWidth, CV_8U);
+
+    LaplacianFilter(image1Gray, laplaced1, imageHeigth, imageWidth);
+
+    std::cout << "123" << std::endl;
+
+    LaplacianFilter(image2Gray, laplaced2, imageHeigth, imageWidth);
+    LaplacianFilter(image3Gray, laplaced3, imageHeigth, imageWidth);
+    LaplacianFilter(image4Gray, laplaced4, imageHeigth, imageWidth);
+
+    std::cout << "1234" << std::endl;
+
+    laplaced1 = abs(laplaced1); //absolute value
+    laplaced2 = abs(laplaced2);
+    laplaced3 = abs(laplaced3);
+    laplaced4 = abs(laplaced4);
+
+    //std::cout << laplaced1 << std::endl;
+
+    imwrite("laplaced1.jpg", laplaced1);
+    imwrite("laplaced2.jpg", laplaced2);
+    imwrite("laplaced3.jpg", laplaced3);
+    imwrite("laplaced4.jpg", laplaced4);
+
+    std::cout << "2222" << std::endl;
+
+    Mat stDev1(imageHeigth, imageWidth, CV_8U);
+    Mat stDev2(imageHeigth, imageWidth, CV_8U);
+    Mat stDev3(imageHeigth, imageWidth, CV_8U);
+    Mat stDev4(imageHeigth, imageWidth, CV_8U);
+
+    standartDeviation(image1, stDev1, imageHeigth, imageWidth);
+}
+
 #ifdef HAVE_OPENCV_DNN
 
 TEST(convolution_nchw, halide) {
@@ -165,7 +218,7 @@ TEST(convolution_nhwc, halide) {
 
 
 TEST(idw, halide) {
-    Mat src(height, width, CV_8U); 
+    Mat src(height, width, CV_8U);
     Mat dst(height, width, CV_8U), cl_dst(height, width, CV_8UC3), dst_h(height, width, CV_8U), cl_dst_h(height, width, CV_8UC3);
     // randu(src, 0, 256);
 

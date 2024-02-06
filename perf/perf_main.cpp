@@ -127,6 +127,7 @@ PERF_TEST(boxFilter, halide) {
 
     PERF_SAMPLE_BEGIN()
         boxFilter_halide(src16.ptr<uint16_t>(), dst.ptr<uint16_t>(), src.rows, src.cols);
+
     PERF_SAMPLE_END()
 
     SANITY_CHECK_NOTHING();
@@ -141,6 +142,10 @@ PERF_TEST(boxFilter, opencv) {
         boxFilter_opencv(srcCh, dst);
     PERF_SAMPLE_END()
 
+    SANITY_CHECK_NOTHING();
+}
+
+PERF_TEST(contrast, reference) {
     SANITY_CHECK_NOTHING();
 }
 
