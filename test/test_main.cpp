@@ -134,7 +134,7 @@ TEST(contrast, halide) {
     Mat laplaced3(imageHeigth, imageWidth, CV_8U);
     Mat laplaced4(imageHeigth, imageWidth, CV_8U);
 
-    LaplacianFilter(image1Gray, laplaced1, imageHeigth, imageWidth);
+    //LaplacianFilter(image1Gray, laplaced1, imageHeigth, imageWidth);
 
     std::cout << "123" << std::endl;
 
@@ -144,14 +144,14 @@ TEST(contrast, halide) {
 
     std::cout << "1234" << std::endl;
 
-    laplaced1 = abs(laplaced1); //absolute value
+    //laplaced1 = abs(laplaced1); //absolute value
     laplaced2 = abs(laplaced2);
     laplaced3 = abs(laplaced3);
     laplaced4 = abs(laplaced4);
 
     //std::cout << laplaced1 << std::endl;
 
-    imwrite("laplaced1.jpg", laplaced1);
+    //imwrite("laplaced1.jpg", laplaced1);
     imwrite("laplaced2.jpg", laplaced2);
     imwrite("laplaced3.jpg", laplaced3);
     imwrite("laplaced4.jpg", laplaced4);

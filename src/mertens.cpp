@@ -17,8 +17,7 @@ void LaplacianFilter(Mat src, Mat dst, int height, int width) { // перена�
 #ifdef __riscv
     contrast(input, output);
 #else
-    static Func f("contrast");
-    if (!f.defined()) {
+    Func f("contrast");
 try {
         Var x("x"), y("y"), c("c");
 
@@ -43,7 +42,6 @@ try {
     std::cout << ex.what() << std::endl;
     exit(1);
 }
-    }
 #endif
 }
 
