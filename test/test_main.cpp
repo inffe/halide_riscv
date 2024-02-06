@@ -129,6 +129,10 @@ TEST(contrast, halide) {
     int imageWidth = image1Gray.cols;
     int imageHeigth = image1Gray.rows;
 
+    int size = imageHeigth * imageHeigth;
+
+    Mat dst(imageHeigth, imageWidth, CV_8U); // fix??
+
     Mat laplaced1(imageHeigth, imageWidth, CV_8U);
     Mat laplaced2(imageHeigth, imageWidth, CV_8U);
     Mat laplaced3(imageHeigth, imageWidth, CV_8U);
@@ -142,28 +146,132 @@ TEST(contrast, halide) {
     LaplacianFilter(image3Gray, laplaced3, imageHeigth, imageWidth);
     LaplacianFilter(image4Gray, laplaced4, imageHeigth, imageWidth);
 
-    std::cout << "1234" << std::endl;
-
-    //laplaced1 = abs(laplaced1); //absolute value
+    laplaced1 = abs(laplaced1); //absolute value
     laplaced2 = abs(laplaced2);
     laplaced3 = abs(laplaced3);
     laplaced4 = abs(laplaced4);
 
-    //std::cout << laplaced1 << std::endl;
-
-    //imwrite("laplaced1.jpg", laplaced1);
+    imwrite("laplaced1.jpg", laplaced1); //write laplaced images
     imwrite("laplaced2.jpg", laplaced2);
     imwrite("laplaced3.jpg", laplaced3);
     imwrite("laplaced4.jpg", laplaced4);
 
-    std::cout << "2222" << std::endl;
+    std::cout << "check LaplacedFilter" << std::endl;
 
-    Mat stDev1(imageHeigth, imageWidth, CV_8U);
-    Mat stDev2(imageHeigth, imageWidth, CV_8U);
-    Mat stDev3(imageHeigth, imageWidth, CV_8U);
-    Mat stDev4(imageHeigth, imageWidth, CV_8U);
+    Mat stDev1(imageHeigth, imageWidth, CV_32F);
+    Mat stDev2(imageHeigth, imageWidth, CV_32F);
+    Mat stDev3(imageHeigth, imageWidth, CV_32F);
+    Mat stDev4(imageHeigth, imageWidth, CV_32F);
 
-    //standartDeviation(image1, stDev1, imageHeigth, imageWidth);
+    //check stability of image1/2/3/4
+
+    standartDeviation(image1, stDev1, imageHeigth, imageWidth); // Calculation of standrat deviation - 1920x1080x1 as result
+    standartDeviation(image2, stDev2, imageHeigth, imageWidth);
+    standartDeviation(image3, stDev3, imageHeigth, imageWidth);
+    standartDeviation(image4, stDev4, imageHeigth, imageWidth);
+
+    std::cout << "check standartDeviation" << std::endl;
+
+    Mat we1(imageHeigth, imageWidth, CV_32F);
+    Mat we2(imageHeigth, imageWidth, CV_32F);
+    Mat we3(imageHeigth, imageWidth, CV_32F);
+    Mat we4(imageHeigth, imageWidth, CV_32F);
+
+    wellExp(image1, we1, imageHeigth, imageWidth); // Calculation of well-exposedness - 1920x1080x1 as result
+    wellExp(image2, we2, imageHeigth, imageWidth);
+    wellExp(image3, we3, imageHeigth, imageWidth);
+    wellExp(image4, we4, imageHeigth, imageWidth);
+
+    std::cout << "check well-exposedness" << std::endl;
+
+    Mat weights1(imageHeigth, imageWidth, CV_32F);
+    Mat weights2(imageHeigth, imageWidth, CV_32F);
+    Mat weights3(imageHeigth, imageWidth, CV_32F);
+    Mat weights4(imageHeigth, imageWidth, CV_32F);
+
+    //pow() ??????
+
+    weightsImage(laplaced1, stDev1, we1, weights1, imageHeigth, imageWidth); // Calculation of weight map - 1920x1080x1 as result
+    weightsImage(laplaced2, stDev2, we2, weights2, imageHeigth, imageWidth);
+    weightsImage(laplaced3, stDev3, we3, weights3, imageHeigth, imageWidth);
+    weightsImage(laplaced4, stDev4, we4, weights4, imageHeigth, imageWidth);
+
+    std::vector<Mat> weightsVec = {weights1, weights2, weights3, weights4};
+
+    std::vector<Mat> imagesVec = {image1, image2, image3, image4};
+
+    std::cout << "check weights" << std::endl;
+
+    Mat weights_sum(imageHeigth, imageWidth, CV_32F);
+
+    weight_sum(weights1, weights1, weights1, weights1, weights_sum, imageHeigth, imageWidth);
+
+    std::cout << "check weights sum" << std::endl;
+
+    //opencv code
+
+    int maxlevel = static_cast<int>(logf(static_cast<float>(min(imageWidth, imageHeigth)) / logf(2.0f)));
+        std::vector<Mat> res_pyr(maxlevel + 1);
+        std::vector<Mutex> res_pyr_mutexes(maxlevel + 1);
+
+        std::cout << "flag0" << std::endl;
+
+        for (int i = 0; i < imagesVec.size(); ++i)
+        imagesVec[i].convertTo(imagesVec[i], CV_32F);
+
+        parallel_for_(Range(0, static_cast<int>(imagesVec.size())), [&](const Range& range) {
+            for(int i = range.start; i < range.end; i++) {
+                weightsVec[i] /= weights_sum;
+
+                std::cout << "flag1" << std::endl;
+
+                std::vector<Mat> img_pyr, weight_pyr;
+                buildPyramid(imagesVec[i], img_pyr, maxlevel);
+                buildPyramid(weightsVec[i], weight_pyr, maxlevel);
+                // CV_CheckTypeEQ(img_pyr[0].type(), weight_pyr[0].type(), "");
+
+
+                for(int lvl = 0; lvl < maxlevel; lvl++) {
+                    Mat up;
+                    pyrUp(img_pyr[lvl + 1], up, img_pyr[lvl].size());
+                    img_pyr[lvl] -= up;
+                }
+
+                std::cout << "flag2" << std::endl;
+
+                for(int lvl = 0; lvl <= maxlevel; lvl++) {
+                    std::vector<Mat> splitted(3); // changed var to number
+                    split(img_pyr[lvl], splitted);
+                    for(int c = 0; c < 3; c++) {
+                        splitted[c] = splitted[c].mul(weight_pyr[lvl]);
+                    }
+                    merge(splitted, img_pyr[lvl]);
+
+                    std::cout << "flag2.1" << std::endl;
+
+                    AutoLock lock(res_pyr_mutexes[lvl]);
+                    if(res_pyr[lvl].empty()) {
+                        res_pyr[lvl] = img_pyr[lvl];
+                    } else {
+                        res_pyr[lvl] += img_pyr[lvl];
+                    }
+                }
+
+            }
+        });
+
+        std::cout << "flag3" << std::endl;
+
+        for(int lvl = maxlevel; lvl > 0; lvl--) {
+            Mat up;
+            pyrUp(res_pyr[lvl], up, res_pyr[lvl - 1].size());
+            res_pyr[lvl - 1] += up;
+        }
+
+        dst = res_pyr[0];
+
+        imwrite("FinalImage.jpg", dst);
+
 }
 
 #ifdef HAVE_OPENCV_DNN

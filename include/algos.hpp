@@ -32,6 +32,9 @@ void halide_julia(uint8_t* dst, int height, int width);
 
 void LaplacianFilter(cv::Mat src, cv::Mat dst, int height, int width);
 void standartDeviation(cv::Mat src, cv::Mat dst, int height, int width);
+void wellExp(cv::Mat src, cv::Mat dst, int height, int width);
+void weightsImage(cv::Mat src1, cv::Mat src2, cv::Mat src3, cv::Mat dst, int height, int width);
+void weight_sum(cv::Mat src1, cv::Mat src2, cv::Mat src3, cv::Mat src4, cv::Mat dst, int height, int width);
 
 #ifdef HAVE_OPENCV_DNN
 void convolution_nchw_halide(float* src, float* kernel, float* dst,
