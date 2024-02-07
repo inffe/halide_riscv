@@ -20,6 +20,29 @@ CV_PERF_TEST_MAIN("")
 
 Mat src(1080, 1920, CV_8UC3);
 
+static const int julia_width = 200;
+static const int julia_height = 200;
+
+PERF_TEST(julia, halide) {
+    Mat dst(julia_height, julia_width, CV_8UC1, Scalar(0));
+
+    PERF_SAMPLE_BEGIN()
+        halide_julia(dst.ptr<uint8_t>(), dst.rows, dst.cols);
+    PERF_SAMPLE_END()
+
+    SANITY_CHECK_NOTHING();
+}
+
+PERF_TEST(julia, reference) {
+    Mat dst(julia_height, julia_width, CV_8UC1, Scalar(0));
+
+    PERF_SAMPLE_BEGIN()
+        julia_ref(dst.ptr<uint8_t>(), dst.rows, dst.cols);
+    PERF_SAMPLE_END()
+
+    SANITY_CHECK_NOTHING();
+}
+
 PERF_TEST(histogram, reference) {
     Mat dst(3, 256, CV_32S);
     randu(src, 0, 256);

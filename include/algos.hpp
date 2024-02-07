@@ -24,6 +24,9 @@ void bgr2gray_opencv(const cv::Mat& src, cv::Mat& dst);
 void boxFilter_halide(uint16_t* src, uint16_t* dst, int height, int width);
 void boxFilter_opencv(const cv::Mat& src, cv::Mat& dst);
 
+void julia_ref(uint8_t* dst, int height, int width);
+void halide_julia(uint8_t* dst, int height, int width);
+
 #ifdef HAVE_OPENCV_DNN
 void convolution_nchw_halide(float* src, float* kernel, float* dst,
                              int inpChannels, int outChannels, int height, int width);
