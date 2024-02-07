@@ -67,6 +67,7 @@ file(GLOB SOURCES src/*.cpp)
 if("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "riscv64")
   file(GLOB ASM aot/*.s)
   list(APPEND SOURCES ${ASM})
+  list(APPEND SOURCES aot/halide_runtime.o)
 endif()
 
 add_library(algos SHARED ${SOURCES})

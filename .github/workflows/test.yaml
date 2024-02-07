@@ -45,7 +45,7 @@ jobs:
         cd build
         rm ${{ github.workspace }}/aot/*
         ./perf_algo --gtest_filter=*halide*
-        mv *.h *.s ${{ github.workspace }}/aot
+        mv *.h *.s halide_runtime.o ${{ github.workspace }}/aot
 
     - name: Build for RISC-V
       run: |
