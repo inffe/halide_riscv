@@ -92,6 +92,7 @@ target_include_directories(algos PRIVATE
 target_link_libraries(algos
   "${binary_dir}/install/lib/libopencv_core.so"
   "${binary_dir}/install/lib/libopencv_imgproc.so"
+  "${binary_dir}/install/lib/libopencv_imgcodecs.so"
 )
 
 
