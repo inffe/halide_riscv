@@ -41,3 +41,7 @@ void convolution_opencv(const cv::Mat& src, const cv::Mat& weights, cv::Mat& dst
 void idw_ref(const uint8_t* src, uint8_t* dst, int height, int width, int* points, float* weights);
 
 void idw_halide(const uint8_t* src, uint8_t* dst, int height, int width, int* pointsBuf, float* weightsBuf);
+
+void voxel_up(float* src, float* kernel, float* dst,
+                    int inpChannels, int height, int width, int depth);
+void upscale(const std::vector<std::string> img_path, int width, int height);

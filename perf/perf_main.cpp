@@ -236,3 +236,22 @@ PERF_TEST(idw, halide) {
 
     SANITY_CHECK_NOTHING();
 }
+
+PERF_TEST(voxel_up, halide) {
+    static const int ic = 4;
+    static const int height = 100;
+    static const int width = 100;
+    static const int batch = 72;
+    Mat src({width, height,ic, batch}, CV_32F);
+    Mat kernel({4, 4, 4, ic}, CV_32F);
+    Mat dst({width*2, height*2,ic, batch*2}, CV_32F);
+    randn(src, 0, 1);
+    randn(kernel, 0, 1);
+
+    PERF_SAMPLE_BEGIN()
+        voxel_up(src.ptr<float>(), kernel.ptr<float>(), dst.ptr<float>(),
+                                ic, width, height, batch);
+    PERF_SAMPLE_END()
+
+    SANITY_CHECK_NOTHING();
+}
