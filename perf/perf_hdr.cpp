@@ -4,9 +4,7 @@
 
 using namespace cv;
 
-CV_PERF_TEST_MAIN("")    
-
-PERF_TEST(hdr, halide) {   
+PERF_TEST(hdr, halide) {
 
     Mat image1 = imread("1.jpg");
     Mat image2 = imread("2.jpg");
