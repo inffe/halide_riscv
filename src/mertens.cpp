@@ -45,7 +45,7 @@ try {
 
         f(x, y) = sum(input1(x + r.x, y + r.y) * weights(r.x + 1, r.y + 1));
 
-        // f.vectorize(x, 4);
+        f.vectorize(x, 4);
 
         Target target;
         target.os = Target::OS::Linux;
@@ -98,7 +98,7 @@ try {
 
     f(x, y) = sqrt(r*r + g*g + b*b);
 
-    // f.vectorize(x, 4);
+    f.vectorize(x, 4);
 
         Target target;
         target.os = Target::OS::Linux;
@@ -157,7 +157,7 @@ try {
 
     f(x, y) = r * g * b;
 
-    // f.vectorize(x, 4);
+    f.vectorize(x, 4);
 
         Target target;
         target.os = Target::OS::Linux;
@@ -204,7 +204,7 @@ try {
 
     f(x, y) = input1(x, y) * input2(x, y) + 1e-12f;
 
-    // f.vectorize(x, 4);
+    f.vectorize(x, 4);
 
         Target target;
         target.os = Target::OS::Linux;
@@ -254,7 +254,7 @@ try {
 
     f(x, y) = input1(x, y) + input2(x, y) + input3(x, y) + input4(x, y);
 
-        // f.vectorize(x, 4);
+        f.vectorize(x, 4);
 
         Target target;
         target.os = Target::OS::Linux;
