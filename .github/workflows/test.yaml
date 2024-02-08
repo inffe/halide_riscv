@@ -39,6 +39,13 @@ jobs:
 
         make -j$(nproc --all)
 
+    - name: Download test data
+      run: |
+        python3 -m pip install --upgrade pip
+        python3 -m pip install gdown
+        python3 -m gdown https://drive.google.com/uc?id=1tCgUEbdlLLad-ThZ5PO9gJyy9X5DCaUT
+        tar -xf test_data.tar.gz
+
     - name: Generate code
       run: |
         export LD_LIBRARY_PATH=${{ github.workspace }}/halide-install/lib:$LD_LIBRARY_PATH
