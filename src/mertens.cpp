@@ -1,12 +1,27 @@
 #include <opencv2/opencv.hpp>
-
 #include <vector>
-#include "Halide.h"
+
+#ifdef __riscv
+
+#include <HalideBuffer.h>
+#include "halide_laplacianFilter_rv.h"
+#include "halide_standartDeviation.h"
+#include "halide_wellExp.h"
+#include "halide_weightsImage.h"
+#include "halide_weight_sum_rv.h"
+
+using namespace Halide::Runtime;
+
+#else
+
+#include <Halide.h>
 #include <iostream>
 #include <cmath>
 
 using namespace cv;
 using namespace Halide;
+
+#endif
 
 void LaplacianFilter(Mat src, Mat dst, int height, int width) { 
 
@@ -16,7 +31,7 @@ void LaplacianFilter(Mat src, Mat dst, int height, int width) {
     Buffer<float> weights(filter);
 
 #ifdef __riscv
-    contrast(input, output);
+    LaplacianFilter(input, output, weights);
 #else
     Func f("contrast");
 try {
@@ -28,7 +43,28 @@ try {
 
         f(x, y) = sum(input1(x + r.x, y + r.y) * weights(r.x + 1, r.y + 1));
 
-        f.realize(output);
+        Target target;
+        target.os = Target::OS::Linux;
+        target.arch = Target::Arch::RISCV;
+        target.bits = 64;
+        //target.vector_bits = 128;
+
+        Halide::compile_standalone_runtime("halide_runtime.o", target); // зачем?
+
+        // Tested XuanTie C906 has 128-bit vector unit
+        //CV_Assert(target.vector_bits <= 128);
+
+        std::vector<Target::Feature> features;
+        //features.push_back(Target::RVV);
+        features.push_back(Target::NoAsserts);
+        features.push_back(Target::NoRuntime);
+        target.set_features(features);
+
+        std::cout << target << std::endl;
+        f.print_loop_nest();
+
+        f.compile_to_header("halide_laplacianFilter_rv.h", {}, "halide_laplacianFilter_rv", target); 
+        f.compile_to_assembly("halide_laplacianFilter_rv.s", {}, "halide_laplacianFilter_rv", target); 
 
 } catch (const Halide::Error& ex) {
     std::cout << ex.what() << std::endl;
@@ -42,6 +78,9 @@ void standartDeviation(Mat src, Mat dst, int height, int width) {
     Buffer<float> input = Buffer<float>::make_interleaved(src.ptr<float>(), width, height, 3);
     Buffer<float> output(dst.ptr<float>(), {width, height}); 
 
+#ifdef __riscv
+    standartDeviation(input, output);
+#else
     Func f("deviation");
     Func mean;
 
@@ -57,12 +96,34 @@ try {
 
     f(x, y) = sqrt(r*r + g*g + b*b);
 
-    f.realize(output);
+        Target target;
+        target.os = Target::OS::Linux;
+        target.arch = Target::Arch::RISCV;
+        target.bits = 64;
+        //target.vector_bits = 128;
+
+        Halide::compile_standalone_runtime("halide_runtime.o", target);
+
+        // Tested XuanTie C906 has 128-bit vector unit
+        //CV_Assert(target.vector_bits <= 128);
+
+        std::vector<Target::Feature> features;
+        //features.push_back(Target::RVV);
+        features.push_back(Target::NoAsserts);
+        features.push_back(Target::NoRuntime);
+        target.set_features(features);
+
+        std::cout << target << std::endl;
+        f.print_loop_nest();
+
+        f.compile_to_header("halide_standartDeviation_rv.h", {}, "halide_standartDeviation_rv", target); 
+        f.compile_to_assembly("halide_standartDeviation_rv.s", {}, "halide_standartDeviation_rv", target); 
 
 } catch (const Halide::Error& ex) {
     std::cout << ex.what() << std::endl;
     exit(1);
 }
+#endif
 }
 
 void wellExp(Mat src, Mat dst, int height, int width) {
@@ -70,6 +131,10 @@ void wellExp(Mat src, Mat dst, int height, int width) {
     Buffer<float> input = Buffer<float>::make_interleaved(src.ptr<float>(), width, height, 3);
     Buffer<float> output(dst.ptr<float>(), {width, height}); 
     
+#ifdef __riscv
+    wellExp(input, output);
+
+#else
     Func f("well-exposedness");
 
 try {
@@ -90,12 +155,34 @@ try {
 
     f(x, y) = r * g * b;
 
-    f.realize(output);
+        Target target;
+        target.os = Target::OS::Linux;
+        target.arch = Target::Arch::RISCV;
+        target.bits = 64;
+        //target.vector_bits = 128;
+
+        Halide::compile_standalone_runtime("halide_runtime.o", target);
+
+        // Tested XuanTie C906 has 128-bit vector unit
+        //CV_Assert(target.vector_bits <= 128);
+
+        std::vector<Target::Feature> features;
+        //features.push_back(Target::RVV);
+        features.push_back(Target::NoAsserts);
+        features.push_back(Target::NoRuntime);
+        target.set_features(features);
+
+        std::cout << target << std::endl;
+        f.print_loop_nest();
+
+        f.compile_to_header("halide_wellExp_rv.h", {}, "halide_wellExp_rv", target); 
+        f.compile_to_assembly("halide_wellExp_rv.s", {}, "halide_wellExp_rv", target); 
 
 } catch (const Halide::Error& ex) {
     std::cout << ex.what() << std::endl;
     exit(1);
 }
+#endif
 }
 
 void weightsImage(Mat contrast, Mat saturation, Mat wellexp, Mat dst, int height, int width) {
@@ -103,6 +190,10 @@ void weightsImage(Mat contrast, Mat saturation, Mat wellexp, Mat dst, int height
     Buffer<float> input2(saturation.ptr<float>(), {width, height});
     Buffer<float> output(dst.ptr<float>(), {width, height});
 
+#ifdef __riscv
+    weightsImage(input1, input2, output);
+
+#else
     Func f("weights");
 
 try {
@@ -111,12 +202,34 @@ try {
 
     f(x, y) = input1(x, y) * input2(x, y) + 1e-12f;
 
-    f.realize(output);
+        Target target;
+        target.os = Target::OS::Linux;
+        target.arch = Target::Arch::RISCV;
+        target.bits = 64;
+        //target.vector_bits = 128;
+
+        Halide::compile_standalone_runtime("halide_runtime.o", target);
+
+        // Tested XuanTie C906 has 128-bit vector unit
+        //CV_Assert(target.vector_bits <= 128);
+
+        std::vector<Target::Feature> features;
+        //features.push_back(Target::RVV);
+        features.push_back(Target::NoAsserts);
+        features.push_back(Target::NoRuntime);
+        target.set_features(features);
+
+        std::cout << target << std::endl;
+        f.print_loop_nest();
+
+        f.compile_to_header("halide_weightsImage_rv.h", {}, "halide_weightsImage_rv", target); 
+        f.compile_to_assembly("halide_weightsImage_rv.s", {}, "halide_weightsImage_rv", target); 
 
 } catch (const Halide::Error& ex) {
     std::cout << ex.what() << std::endl;
     exit(1);
 }
+#endif
 }
 
 void weight_sum(Mat src1, Mat src2, Mat src3, Mat src4, Mat dst, int height, int width) {
@@ -126,6 +239,10 @@ void weight_sum(Mat src1, Mat src2, Mat src3, Mat src4, Mat dst, int height, int
     Buffer<float> input4(src4.ptr<float>(), {width, height});
     Buffer<float> output(dst.ptr<float>(), {width, height});
 
+#ifdef __riscv
+    weight_sum(input1, input2, input3, input4, output);
+
+#else
     Func f("summary");
 
 try {
@@ -134,10 +251,32 @@ try {
 
     f(x, y) = input1(x, y) + input2(x, y) + input3(x, y) + input4(x, y);
 
-    f.realize(output);
+        Target target;
+        target.os = Target::OS::Linux;
+        target.arch = Target::Arch::RISCV;
+        target.bits = 64;
+        //target.vector_bits = 128;
+
+        Halide::compile_standalone_runtime("halide_runtime.o", target);
+
+        // Tested XuanTie C906 has 128-bit vector unit
+        //CV_Assert(target.vector_bits <= 128);
+
+        std::vector<Target::Feature> features;
+        //features.push_back(Target::RVV);
+        features.push_back(Target::NoAsserts);
+        features.push_back(Target::NoRuntime);
+        target.set_features(features);
+
+        std::cout << target << std::endl;
+        f.print_loop_nest();
+
+        f.compile_to_header("halide_weight_sum_rv.h", {}, "halide_weight_sum_rv", target); 
+        f.compile_to_assembly("halide_weight_sum_rv.s", {}, "halide_weight_sum_rv", target); 
 
 } catch (const Halide::Error& ex) {
     std::cout << ex.what() << std::endl;
     exit(1);
 }
+#endif
 }
