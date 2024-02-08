@@ -217,10 +217,10 @@ PERF_TEST(idw, reference) {
 
     Mat dst(height, width, CV_8U);
 
-    PERF_SAMPLE_BEGIN()
+    TEST_CYCLE_N(10)
+    {
         idw_ref(NULL, dst.ptr<uint8_t>(), height, width, idwPoints, idwWeights);
-    PERF_SAMPLE_END()
-
+    }
     SANITY_CHECK_NOTHING();
 }
 
@@ -230,10 +230,10 @@ PERF_TEST(idw, halide) {
 
     Mat dst(height, width, CV_8U);
 
-    PERF_SAMPLE_BEGIN()
+    TEST_CYCLE_N(10)
+    {
         idw_halide(NULL, dst.ptr<uint8_t>(), height, width, idwPoints, idwWeights);
-    PERF_SAMPLE_END()
-
+    }
     SANITY_CHECK_NOTHING();
 }
 
@@ -248,10 +248,11 @@ PERF_TEST(voxel_up, halide) {
     randn(src, 0, 1);
     randn(kernel, 0, 1);
 
-    PERF_SAMPLE_BEGIN()
+    TEST_CYCLE_N(10)
+    {
         voxel_up(src.ptr<float>(), kernel.ptr<float>(), dst.ptr<float>(),
                                 ic, width, height, batch);
-    PERF_SAMPLE_END()
+    }
 
     SANITY_CHECK_NOTHING();
 }

@@ -95,6 +95,14 @@ jobs:
           export LD_LIBRARY_PATH=./:./opencv-prefix/src/opencv-build/lib:$LD_LIBRARY_PATH
           ./test_algo
 
+      - name: Upload binaries
+        uses: actions/upload-artifact@v4
+        with:
+          name: images
+          path: |
+            *.png
+            *.jpg
+
       - name: Run perf tests
         run: |
           chmod +x perf_algo
