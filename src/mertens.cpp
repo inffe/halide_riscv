@@ -23,7 +23,7 @@ using namespace Halide;
 
 #endif
 
-void LaplacianFilter(Mat src, Mat dst, int height, int width) { 
+void LaplacianFilter(Mat src, Mat dst, int height, int width) {
 
     float filter[3][3] = {{0, -1, 0}, {-1, 4, -1}, {0, -1, 0}};
     Buffer<float> input(src.ptr<float>(), {width, height});
@@ -31,7 +31,7 @@ void LaplacianFilter(Mat src, Mat dst, int height, int width) {
     Buffer<float> weights(filter);
 
 #ifdef __riscv
-    LaplacianFilter(input, output, weights);
+    halide_laplacianFilter_rv(input, output);
 #else
     Func f("contrast");
 try {
@@ -49,8 +49,6 @@ try {
         target.bits = 64;
         //target.vector_bits = 128;
 
-        Halide::compile_standalone_runtime("halide_runtime.o", target); // зачем?
-
         // Tested XuanTie C906 has 128-bit vector unit
         //CV_Assert(target.vector_bits <= 128);
 
@@ -63,8 +61,8 @@ try {
         std::cout << target << std::endl;
         f.print_loop_nest();
 
-        f.compile_to_header("halide_laplacianFilter_rv.h", {}, "halide_laplacianFilter_rv", target); 
-        f.compile_to_assembly("halide_laplacianFilter_rv.s", {}, "halide_laplacianFilter_rv", target); 
+        f.compile_to_header("halide_laplacianFilter_rv.h", {input}, "halide_laplacianFilter_rv", target);
+        f.compile_to_assembly("halide_laplacianFilter_rv.s", {input}, "halide_laplacianFilter_rv", target);
 
 } catch (const Halide::Error& ex) {
     std::cout << ex.what() << std::endl;
@@ -76,10 +74,10 @@ try {
 void standartDeviation(Mat src, Mat dst, int height, int width) {
 
     Buffer<float> input = Buffer<float>::make_interleaved(src.ptr<float>(), width, height, 3);
-    Buffer<float> output(dst.ptr<float>(), {width, height}); 
+    Buffer<float> output(dst.ptr<float>(), {width, height});
 
 #ifdef __riscv
-    standartDeviation(input, output);
+    halide_standartDeviation_rv(input, output);
 #else
     Func f("deviation");
     Func mean;
@@ -102,8 +100,6 @@ try {
         target.bits = 64;
         //target.vector_bits = 128;
 
-        Halide::compile_standalone_runtime("halide_runtime.o", target);
-
         // Tested XuanTie C906 has 128-bit vector unit
         //CV_Assert(target.vector_bits <= 128);
 
@@ -116,8 +112,8 @@ try {
         std::cout << target << std::endl;
         f.print_loop_nest();
 
-        f.compile_to_header("halide_standartDeviation_rv.h", {}, "halide_standartDeviation_rv", target); 
-        f.compile_to_assembly("halide_standartDeviation_rv.s", {}, "halide_standartDeviation_rv", target); 
+        f.compile_to_header("halide_standartDeviation_rv.h", {input}, "halide_standartDeviation_rv", target);
+        f.compile_to_assembly("halide_standartDeviation_rv.s", {input}, "halide_standartDeviation_rv", target);
 
 } catch (const Halide::Error& ex) {
     std::cout << ex.what() << std::endl;
@@ -129,10 +125,10 @@ try {
 void wellExp(Mat src, Mat dst, int height, int width) {
 
     Buffer<float> input = Buffer<float>::make_interleaved(src.ptr<float>(), width, height, 3);
-    Buffer<float> output(dst.ptr<float>(), {width, height}); 
-    
+    Buffer<float> output(dst.ptr<float>(), {width, height});
+
 #ifdef __riscv
-    wellExp(input, output);
+    halide_wellExp_rv(input, output);
 
 #else
     Func f("well-exposedness");
@@ -161,8 +157,6 @@ try {
         target.bits = 64;
         //target.vector_bits = 128;
 
-        Halide::compile_standalone_runtime("halide_runtime.o", target);
-
         // Tested XuanTie C906 has 128-bit vector unit
         //CV_Assert(target.vector_bits <= 128);
 
@@ -175,8 +169,8 @@ try {
         std::cout << target << std::endl;
         f.print_loop_nest();
 
-        f.compile_to_header("halide_wellExp_rv.h", {}, "halide_wellExp_rv", target); 
-        f.compile_to_assembly("halide_wellExp_rv.s", {}, "halide_wellExp_rv", target); 
+        f.compile_to_header("halide_wellExp_rv.h", {input}, "halide_wellExp_rv", target);
+        f.compile_to_assembly("halide_wellExp_rv.s", {input}, "halide_wellExp_rv", target);
 
 } catch (const Halide::Error& ex) {
     std::cout << ex.what() << std::endl;
@@ -191,7 +185,7 @@ void weightsImage(Mat contrast, Mat saturation, Mat wellexp, Mat dst, int height
     Buffer<float> output(dst.ptr<float>(), {width, height});
 
 #ifdef __riscv
-    weightsImage(input1, input2, output);
+    halide_weightsImage_rv(input1, input2, output);
 
 #else
     Func f("weights");
@@ -208,8 +202,6 @@ try {
         target.bits = 64;
         //target.vector_bits = 128;
 
-        Halide::compile_standalone_runtime("halide_runtime.o", target);
-
         // Tested XuanTie C906 has 128-bit vector unit
         //CV_Assert(target.vector_bits <= 128);
 
@@ -222,8 +214,8 @@ try {
         std::cout << target << std::endl;
         f.print_loop_nest();
 
-        f.compile_to_header("halide_weightsImage_rv.h", {}, "halide_weightsImage_rv", target); 
-        f.compile_to_assembly("halide_weightsImage_rv.s", {}, "halide_weightsImage_rv", target); 
+        f.compile_to_header("halide_weightsImage_rv.h", {input1, input2}, "halide_weightsImage_rv", target);
+        f.compile_to_assembly("halide_weightsImage_rv.s", {input1, input2}, "halide_weightsImage_rv", target);
 
 } catch (const Halide::Error& ex) {
     std::cout << ex.what() << std::endl;
@@ -240,7 +232,7 @@ void weight_sum(Mat src1, Mat src2, Mat src3, Mat src4, Mat dst, int height, int
     Buffer<float> output(dst.ptr<float>(), {width, height});
 
 #ifdef __riscv
-    weight_sum(input1, input2, input3, input4, output);
+    halide_weight_sum_rv(input1, input2, input3, input4, output);
 
 #else
     Func f("summary");
@@ -257,8 +249,6 @@ try {
         target.bits = 64;
         //target.vector_bits = 128;
 
-        Halide::compile_standalone_runtime("halide_runtime.o", target);
-
         // Tested XuanTie C906 has 128-bit vector unit
         //CV_Assert(target.vector_bits <= 128);
 
@@ -271,8 +261,8 @@ try {
         std::cout << target << std::endl;
         f.print_loop_nest();
 
-        f.compile_to_header("halide_weight_sum_rv.h", {}, "halide_weight_sum_rv", target); 
-        f.compile_to_assembly("halide_weight_sum_rv.s", {}, "halide_weight_sum_rv", target); 
+        f.compile_to_header("halide_weight_sum_rv.h", {input1, input2, input3, input4}, "halide_weight_sum_rv", target);
+        f.compile_to_assembly("halide_weight_sum_rv.s", {input1, input2, input3, input4}, "halide_weight_sum_rv", target);
 
 } catch (const Halide::Error& ex) {
     std::cout << ex.what() << std::endl;

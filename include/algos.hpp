@@ -22,7 +22,6 @@ void bgr2gray_planar_halide(uint8_t* src, uint8_t* dst, int height, int width);
 void bgr2gray_opencv(const cv::Mat& src, cv::Mat& dst);
 
 void boxFilter_halide(uint16_t* src, uint16_t* dst, int height, int width);
-
 void boxFilter_opencv(const cv::Mat& src, cv::Mat& dst);
 void ascii_art_ref(const uint8_t* src, uint8_t* dst, int height, int width);
 void ascii_art_halide(uint8_t* src, uint8_t* dst, int input_height, int input_width);
