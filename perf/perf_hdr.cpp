@@ -84,6 +84,8 @@ PERF_TEST(hdr, halide) {
 
     PERF_SAMPLE_END()
 
+    SANITY_CHECK_NOTHING();
+
     imwrite("laplaced1.jpg", laplaced1 * 255); //write laplaced images
     imwrite("laplaced2.jpg", laplaced2 * 255);
     imwrite("laplaced3.jpg", laplaced3 * 255);

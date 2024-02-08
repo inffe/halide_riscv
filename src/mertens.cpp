@@ -5,11 +5,12 @@
 
 #include <HalideBuffer.h>
 #include "halide_laplacianFilter_rv.h"
-#include "halide_standartDeviation.h"
-#include "halide_wellExp.h"
-#include "halide_weightsImage.h"
+#include "halide_standartDeviation_rv.h"
+#include "halide_wellExp_rv.h"
+#include "halide_weightsImage_rv.h"
 #include "halide_weight_sum_rv.h"
 
+using namespace cv;
 using namespace Halide::Runtime;
 
 #else
@@ -23,7 +24,7 @@ using namespace Halide;
 
 #endif
 
-void LaplacianFilter(Mat src, Mat dst, int height, int width) { 
+void LaplacianFilter(Mat src, Mat dst, int height, int width) {
 
     float filter[3][3] = {{0, -1, 0}, {-1, 4, -1}, {0, -1, 0}};
     Buffer<float> input(src.ptr<float>(), {width, height});
@@ -33,8 +34,9 @@ void LaplacianFilter(Mat src, Mat dst, int height, int width) {
 #ifdef __riscv
     halide_laplacianFilter_rv(input, output);
 #else
-    Func f("contrast");
+    static Func f("contrast");
 try {
+    if (!f.defined()) {
         Var x("x"), y("y"), c("c");
 
         RDom r(-1, 3, -1, 3);
@@ -43,7 +45,7 @@ try {
 
         f(x, y) = sum(input1(x + r.x, y + r.y) * weights(r.x + 1, r.y + 1));
 
-        f.vectorize(x, 4);
+        // f.vectorize(x, 4);
 
         Target target;
         target.os = Target::OS::Linux;
@@ -63,9 +65,9 @@ try {
         std::cout << target << std::endl;
         f.print_loop_nest();
 
-        f.compile_to_header("halide_laplacianFilter_rv.h", {input}, "halide_laplacianFilter_rv", target); 
-        f.compile_to_assembly("halide_laplacianFilter_rv.s", {input}, "halide_laplacianFilter_rv", target); 
-
+        f.compile_to_header("halide_laplacianFilter_rv.h", {input}, "halide_laplacianFilter_rv", target);
+        f.compile_to_assembly("halide_laplacianFilter_rv.s", {input}, "halide_laplacianFilter_rv", target);
+    }
 } catch (const Halide::Error& ex) {
     std::cout << ex.what() << std::endl;
     exit(1);
@@ -76,16 +78,16 @@ try {
 void standartDeviation(Mat src, Mat dst, int height, int width) {
 
     Buffer<float> input = Buffer<float>::make_interleaved(src.ptr<float>(), width, height, 3);
-    Buffer<float> output(dst.ptr<float>(), {width, height}); 
+    Buffer<float> output(dst.ptr<float>(), {width, height});
 
 #ifdef __riscv
-    halide_standartDeviation_rv.h(input, output);
+    halide_standartDeviation_rv(input, output);
 #else
-    Func f("deviation");
+    static Func f("deviation");
     Func mean;
 
 try {
-
+    if (!f.defined()) {
     Var x("x"), y("y"), c("c");
 
     mean(x, y) = cast<float>(input(x, y, 0) + input(x, y, 1) + input(x, y, 2))/3;
@@ -96,7 +98,7 @@ try {
 
     f(x, y) = sqrt(r*r + g*g + b*b);
 
-    f.vectorize(x, 4);
+    // f.vectorize(x, 4);
 
         Target target;
         target.os = Target::OS::Linux;
@@ -116,9 +118,9 @@ try {
         std::cout << target << std::endl;
         f.print_loop_nest();
 
-        f.compile_to_header("halide_standartDeviation_rv.h", {input}, "halide_standartDeviation_rv", target); 
-        f.compile_to_assembly("halide_standartDeviation_rv.s", {input}, "halide_standartDeviation_rv", target); 
-
+        f.compile_to_header("halide_standartDeviation_rv.h", {input}, "halide_standartDeviation_rv", target);
+        f.compile_to_assembly("halide_standartDeviation_rv.s", {input}, "halide_standartDeviation_rv", target);
+    }
 } catch (const Halide::Error& ex) {
     std::cout << ex.what() << std::endl;
     exit(1);
@@ -129,15 +131,15 @@ try {
 void wellExp(Mat src, Mat dst, int height, int width) {
 
     Buffer<float> input = Buffer<float>::make_interleaved(src.ptr<float>(), width, height, 3);
-    Buffer<float> output(dst.ptr<float>(), {width, height}); 
-    
+    Buffer<float> output(dst.ptr<float>(), {width, height});
+
 #ifdef __riscv
     halide_wellExp_rv(input, output);
 
 #else
-    Func f("well-exposedness");
-
+    static Func f("well-exposedness");
 try {
+    if (!f.defined()) {
 
     Var x("x"), y("y"), c("c");
 
@@ -155,7 +157,7 @@ try {
 
     f(x, y) = r * g * b;
 
-    f.vectorize(x, 4);
+    // f.vectorize(x, 4);
 
         Target target;
         target.os = Target::OS::Linux;
@@ -175,9 +177,9 @@ try {
         std::cout << target << std::endl;
         f.print_loop_nest();
 
-        f.compile_to_header("halide_wellExp_rv.h", {input}, "halide_wellExp_rv", target); 
-        f.compile_to_assembly("halide_wellExp_rv.s", {input}, "halide_wellExp_rv", target); 
-
+        f.compile_to_header("halide_wellExp_rv.h", {input}, "halide_wellExp_rv", target);
+        f.compile_to_assembly("halide_wellExp_rv.s", {input}, "halide_wellExp_rv", target);
+    }
 } catch (const Halide::Error& ex) {
     std::cout << ex.what() << std::endl;
     exit(1);
@@ -194,15 +196,15 @@ void weightsImage(Mat contrast, Mat saturation, Mat wellexp, Mat dst, int height
     halide_weightsImage_rv(input1, input2, output);
 
 #else
-    Func f("weights");
-
+    static Func f("weights");
 try {
+    if (!f.defined()) {
 
     Var x("x"), y("y"), c("c");
 
     f(x, y) = input1(x, y) * input2(x, y) + 1e-12f;
 
-    f.vectorize(x, 4);
+    // f.vectorize(x, 4);
 
         Target target;
         target.os = Target::OS::Linux;
@@ -222,9 +224,9 @@ try {
         std::cout << target << std::endl;
         f.print_loop_nest();
 
-        f.compile_to_header("halide_weightsImage_rv.h", {input1, input2}, "halide_weightsImage_rv", target); 
-        f.compile_to_assembly("halide_weightsImage_rv.s", {input1, input2}, "halide_weightsImage_rv", target); 
-
+        f.compile_to_header("halide_weightsImage_rv.h", {input1, input2}, "halide_weightsImage_rv", target);
+        f.compile_to_assembly("halide_weightsImage_rv.s", {input1, input2}, "halide_weightsImage_rv", target);
+    }
 } catch (const Halide::Error& ex) {
     std::cout << ex.what() << std::endl;
     exit(1);
@@ -243,15 +245,16 @@ void weight_sum(Mat src1, Mat src2, Mat src3, Mat src4, Mat dst, int height, int
     halide_weight_sum_rv(input1, input2, input3, input4, output);
 
 #else
-    Func f("summary");
+    static Func f("summary");
 
 try {
+    if (!f.defined()) {
 
     Var x("x"), y("y"), c("c");
 
     f(x, y) = input1(x, y) + input2(x, y) + input3(x, y) + input4(x, y);
 
-        f.vectorize(x, 4);
+        // f.vectorize(x, 4);
 
         Target target;
         target.os = Target::OS::Linux;
@@ -271,9 +274,9 @@ try {
         std::cout << target << std::endl;
         f.print_loop_nest();
 
-        f.compile_to_header("halide_weight_sum_rv.h", {input1, input2, input3, input4}, "halide_weight_sum_rv", target); 
-        f.compile_to_assembly("halide_weight_sum_rv.s", {input1, input2, input3, input4}, "halide_weight_sum_rv", target); 
-
+        f.compile_to_header("halide_weight_sum_rv.h", {input1, input2, input3, input4}, "halide_weight_sum_rv", target);
+        f.compile_to_assembly("halide_weight_sum_rv.s", {input1, input2, input3, input4}, "halide_weight_sum_rv", target);
+    }
 } catch (const Halide::Error& ex) {
     std::cout << ex.what() << std::endl;
     exit(1);
