@@ -11,7 +11,6 @@
 // limitations under the License.
 
 #include <opencv2/ts.hpp>
-#include <iostream>
 
 #include "algos.hpp"
 
